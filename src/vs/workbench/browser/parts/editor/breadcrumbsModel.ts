@@ -17,6 +17,7 @@ import { FileKind } from 'vs/platform/files/common/files';
 import { withNullAsUndefined } from 'vs/base/common/types';
 import { IOutline, IOutlineService, OutlineTarget } from 'vs/workbench/services/outline/browser/outline';
 import { IEditorPane } from 'vs/workbench/common/editor';
+import { IPathService } from 'vs/workbench/services/path/common/pathService';
 
 export class FileElement {
 	constructor(
@@ -40,7 +41,7 @@ export class BreadcrumbsModel {
 	private readonly _fileInfo: FileInfo;
 
 	private readonly _cfgEnabled: BreadcrumbsConfig<boolean>;
-	private readonly _cfgFilePath: BreadcrumbsConfig<'on' | 'off' | 'last'>;
+	private readonly _cfgFilePath: BreadcrumbsConfig<'raw' | 'tilde' | 'off' | 'last'>;
 	private readonly _cfgSymbolPath: BreadcrumbsConfig<'on' | 'off' | 'last'>;
 
 	private readonly _currentOutline = new MutableDisposable<IOutline<any>>();
@@ -55,6 +56,7 @@ export class BreadcrumbsModel {
 		@IConfigurationService configurationService: IConfigurationService,
 		@IWorkspaceContextService private readonly _workspaceService: IWorkspaceContextService,
 		@IOutlineService private readonly _outlineService: IOutlineService,
+		@IPathService private readonly _pathService: IPathService,
 	) {
 		this._cfgEnabled = BreadcrumbsConfig.IsEnabled.bindTo(configurationService);
 		this._cfgFilePath = BreadcrumbsConfig.FilePath.bindTo(configurationService);
@@ -89,7 +91,7 @@ export class BreadcrumbsModel {
 		let result: (FileElement | OutlineElement2)[] = [];
 
 		// file path elements
-		if (this._cfgFilePath.getValue() === 'on') {
+		if (this._cfgFilePath.getValue() === 'raw' || this._cfgFilePath.getValue() === 'tilde') {
 			result = result.concat(this._fileInfo.path);
 		} else if (this._cfgFilePath.getValue() === 'last' && this._fileInfo.path.length > 0) {
 			result = result.concat(this._fileInfo.path.slice(-1));
@@ -130,8 +132,14 @@ export class BreadcrumbsModel {
 		};
 
 		let uriPrefix: URI | null = uri;
+		const homeDirUri = this._pathService.resolvedUserHome;
 		while (uriPrefix && uriPrefix.path !== '/') {
 			if (info.folder && isEqual(info.folder.uri, uriPrefix)) {
+				break;
+			}
+			if (this._cfgFilePath.getValue() === 'tilde' && isEqual(homeDirUri, uriPrefix)) {
+				const tildeURI = URI.parse('~');
+				info.path.unshift(new FileElement(tildeURI, FileKind.FOLDER));
 				break;
 			}
 			info.path.unshift(new FileElement(uriPrefix, info.path.length === 0 ? FileKind.FILE : FileKind.FOLDER));

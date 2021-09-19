@@ -68,7 +68,7 @@ export abstract class BreadcrumbsConfig<T> {
 
 	static readonly IsEnabled = BreadcrumbsConfig._stub<boolean>('breadcrumbs.enabled');
 	static readonly UseQuickPick = BreadcrumbsConfig._stub<boolean>('breadcrumbs.useQuickPick');
-	static readonly FilePath = BreadcrumbsConfig._stub<'on' | 'off' | 'last'>('breadcrumbs.filePath');
+	static readonly FilePath = BreadcrumbsConfig._stub<'raw' | 'tilde' | 'off' | 'last'>('breadcrumbs.filePath');
 	static readonly SymbolPath = BreadcrumbsConfig._stub<'on' | 'off' | 'last'>('breadcrumbs.symbolPath');
 	static readonly SymbolSortOrder = BreadcrumbsConfig._stub<'position' | 'name' | 'type'>('breadcrumbs.symbolSortOrder');
 	static readonly Icons = BreadcrumbsConfig._stub<boolean>('breadcrumbs.icons');
@@ -128,10 +128,11 @@ Registry.as<IConfigurationRegistry>(Extensions.Configuration).registerConfigurat
 		'breadcrumbs.filePath': {
 			description: localize('filepath', "Controls whether and how file paths are shown in the breadcrumbs view."),
 			type: 'string',
-			default: 'on',
-			enum: ['on', 'off', 'last'],
+			default: 'tilde',
+			enum: ['raw', 'tilde', 'off', 'last'],
 			enumDescriptions: [
-				localize('filepath.on', "Show the file path in the breadcrumbs view."),
+				localize('filepath.raw', "Show the raw file path in the breadcrumbs view."),
+				localize('filepath.tilde', "Show the file path in the breadcrumbs view. Replace home path with tilde."),
 				localize('filepath.off', "Do not show the file path in the breadcrumbs view."),
 				localize('filepath.last', "Only show the last element of the file path in the breadcrumbs view."),
 			]

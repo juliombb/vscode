@@ -181,8 +181,13 @@ export class WebviewEditorService extends Disposable implements IWebviewWorkbenc
 		}));
 
 		// The user may have switched focus between two sides of a diff editor
-		this._register(_webviewService.onDidChangeActiveWebview(() => {
-			this.updateActiveWebview();
+		this._register(_webviewService.onDidChangeActiveWebview((newActiveWebview) => {
+			if (newActiveWebview) {
+				this.updateActiveWebview();
+			} else {
+				// when newActiveWebview is undefined, it means a blur ocurred
+				this._onDidChangeActiveWebviewEditor.fire(undefined);
+			}
 		}));
 
 		this.updateActiveWebview();

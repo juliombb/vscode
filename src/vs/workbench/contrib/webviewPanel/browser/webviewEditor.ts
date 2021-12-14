@@ -41,6 +41,9 @@ export class WebviewEditor extends EditorPane {
 	private readonly _onDidFocusWebview = this._register(new Emitter<void>());
 	public override get onDidFocus(): Event<any> { return this._onDidFocusWebview.event; }
 
+	private readonly _onDidBlurWebview = this._register(new Emitter<void>());
+	public override get onDidBlur(): Event<any> { return this._onDidBlurWebview.event; }
+
 	private readonly _scopedContextKeyService = this._register(new MutableDisposable<IContextKeyService>());
 
 	constructor(
@@ -188,9 +191,11 @@ export class WebviewEditor extends EditorPane {
 		const webviewContentFocusTracker = DOM.trackFocus(webview.container);
 		store.add(webviewContentFocusTracker);
 		store.add(webviewContentFocusTracker.onDidFocus(() => this._onDidFocusWebview.fire()));
+		store.add(webviewContentFocusTracker.onDidBlur(() => this._onDidBlurWebview.fire()));
 
 		// Track focus in webview element
 		store.add(webview.onDidFocus(() => this._onDidFocusWebview.fire()));
+		store.add(webview.onDidBlur(() => this._onDidBlurWebview.fire()));
 
 		return store;
 	}
